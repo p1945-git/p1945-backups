@@ -1,0 +1,41 @@
+# Nightly encrypted backup of every Cloudflare D1 database + KV namespace -> R2 bucket p1945-backups.
+# Runs here, not on Render: Render's workspace is capped at 25 services and is full.
+# Secrets (pasted by Denny, never by Claude): CF_BACKUP_RO_TOKEN (D1 Read + Workers KV Read only),
+#   R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY (limited to the p1945-backups bucket), SLACK_ALERT_WEBHOOK.
+# ⛔ Never put the Mac's hub token here.
+# ⚠️ GitHub may start a scheduled run late (usually minutes, sometimes 15+).
+# GO-LIVE: the schedule below is commented out until the secrets exist. Claude uncomments it, then
+# Denny clicks "Run workflow" once to prove it. See README → Go-live.
+name: nightly-backup
+on:
+  # schedule:
+  #   - cron: "0 19 * * *"     # 02:00 WIB (19:00 UTC the day before)
+  workflow_dispatch: {}
+permissions:
+  contents: read
+concurrency:
+  group: backup
+  cancel-in-progress: false
+jobs:
+  cloud:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Self-test (no secrets, no network)
+        run: python -m unittest discover -s tests -t .
+      - name: Back up D1 + KV
+        env:
+          CF_BACKUP_RO_TOKEN: ${{ secrets.CF_BACKUP_RO_TOKEN }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          SLACK_ALERT_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+        run: python -m backup.run_cloud
+      - name: Alert if the job itself broke
+        if: failure()
+        env:
+          SLACK_ALERT_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+        run: python -m backup.alert "Nightly cloud backup FAILED to finish — ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- NOT INSTALLED YET. Install at go-live:  cp this file to ~/Library/LaunchAgents/ then
+     launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.project1945.vault-backup.plist
+     If the Mac is asleep at 02:30, launchd runs the job when it wakes. -->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.project1945.vault-backup</string>
+  <key>ProgramArguments</key>
+  <array><string>/Users/trywidjaja/code/p1945-backups/mac/run-vault-backup.sh</string></array>
+  <key>StartCalendarInterval</key>
+  <dict><key>Hour</key><integer>2</integer><key>Minute</key><integer>30</integer></dict>
+</dict>
+</plist>

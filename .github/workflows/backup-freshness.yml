@@ -1,0 +1,25 @@
+# Daily check that BOTH backups (cloud + vault) are under 36 hours old. A job that silently never ran
+# is the failure no backup job can report on itself — this is the second pair of eyes.
+# Needs: R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, SLACK_ALERT_WEBHOOK. Schedule enabled at go-live.
+name: backup-freshness
+on:
+  # schedule:
+  #   - cron: "0 5 * * *"      # 12:00 WIB — after the 02:00 and 02:30 jobs
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check newest backups
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          SLACK_ALERT_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+        run: python -m backup.freshness
