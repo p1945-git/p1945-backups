@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<!-- NOT INSTALLED YET. Install at go-live:  cp this file to ~/Library/LaunchAgents/ then
+<!-- INSTALLED 2026-10-04. To reinstall:  cp this file to ~/Library/LaunchAgents/ then
      launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.project1945.vault-backup.plist
      If the Mac is asleep at 02:30, launchd runs the job when it wakes. -->
 <plist version="1.0">

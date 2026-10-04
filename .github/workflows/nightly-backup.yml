@@ -4,12 +4,11 @@
 #   R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY (limited to the p1945-backups bucket), SLACK_ALERT_WEBHOOK.
 # ⛔ Never put the Mac's hub token here.
 # ⚠️ GitHub may start a scheduled run late (usually minutes, sometimes 15+).
-# GO-LIVE: the schedule below is commented out until the secrets exist. Claude uncomments it, then
-# Denny clicks "Run workflow" once to prove it. See README → Go-live.
+# LIVE since 2026-10-04: schedule on. To run it by hand: Actions → nightly-backup → Run workflow.
 name: nightly-backup
 on:
-  # schedule:
-  #   - cron: "0 19 * * *"     # 02:00 WIB (19:00 UTC the day before)
+  schedule:
+    - cron: "0 19 * * *"     # 02:00 WIB (19:00 UTC the day before)
   workflow_dispatch: {}
 permissions:
   contents: read
