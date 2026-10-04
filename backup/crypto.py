@@ -5,6 +5,7 @@ Decrypt needs the private key, which lives offline with Denny and is never on a 
 So a stolen backup bucket — or a stolen GitHub secret — cannot read a single backup.
 """
 import os
+import re
 import subprocess
 import tempfile
 
@@ -30,7 +31,24 @@ def encrypt(data, cert=None):
     return _run(["-encrypt", "-binary", "-aes-256-cbc", "-outform", "DER", "-recip", cert] + _OAEP, data)
 
 
+def _normalise_pem(path, tmpdir):
+    """Password managers often flatten a PEM key onto ONE line. Re-wrap it so openssl accepts it."""
+    text = open(path, encoding="utf-8").read()
+    m = re.match(r"\s*(-----BEGIN [A-Z ]+-----)(.*?)(-----END [A-Z ]+-----)\s*$", text, re.S)
+    if not m:
+        return path
+    body = "".join(m.group(2).split())
+    out = os.path.join(tmpdir, "key.pem")
+    with open(out, "w") as f:
+        f.write(m.group(1) + "\n" + "\n".join(body[i:i + 64] for i in range(0, len(body), 64))
+                + "\n" + m.group(3) + "\n")
+    os.chmod(out, 0o600)
+    return out
+
+
 def decrypt(data, private_key, cert=None):
     cert = cert or CERT
-    return _run(["-decrypt", "-binary", "-inform", "DER", "-inkey", private_key,
-                 "-recip", cert] + _OAEP, data)
+    with tempfile.TemporaryDirectory() as d:
+        key = _normalise_pem(private_key, d)
+        return _run(["-decrypt", "-binary", "-inform", "DER", "-inkey", key,
+                     "-recip", cert] + _OAEP, data)

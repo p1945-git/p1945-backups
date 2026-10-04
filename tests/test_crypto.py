@@ -25,6 +25,14 @@ class Crypto(unittest.TestCase):
         self.assertNotIn(b"secret kol", enc)
         self.assertEqual(crypto.decrypt(enc, self.priv, self.cert), data)
 
+    def test_key_flattened_onto_one_line_still_works(self):
+        import re
+        enc = crypto.encrypt(b"restore me", self.cert)
+        flat = os.path.join(self.d, "flat.pem")
+        text = open(self.priv).read()
+        open(flat, "w").write(re.sub(r"\s+", " ", text).strip())
+        self.assertEqual(crypto.decrypt(enc, flat, self.cert), b"restore me")
+
     def test_wrong_key_cannot_read(self):
         enc = crypto.encrypt(b"x" * 100, self.cert)
         with self.assertRaises(RuntimeError):
