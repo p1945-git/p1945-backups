@@ -26,6 +26,19 @@ def fetch(store, day, key_path, out):
     bad = 0
     for mk in manifests:
         m = json.loads(store.get(mk))
+        if m.get("source") == "files":               # work files: path -> shared blob
+            for it in m["items"]:
+                plain = crypto.decrypt(store.get(it["blob"]), key_path)
+                if it["blob"].endswith(".gz.cms"):
+                    plain = gzip.decompress(plain)
+                ok = hashlib.sha256(plain).hexdigest() == it["sha256"]
+                dest = os.path.join(out, "files", *it["path"].split("/"))
+                os.makedirs(os.path.dirname(dest), exist_ok=True)
+                with open(dest, "wb") as f:
+                    f.write(plain)
+                print(("OK   " if ok else "BAD  ") + "files/" + it["path"], f"{len(plain):,} bytes")
+                bad += not ok
+            continue
         for it in m["items"]:
             plain = crypto.decrypt(store.get(it["key"]), key_path)
             ok = hashlib.sha256(plain).hexdigest() == it["plain_sha256"]
