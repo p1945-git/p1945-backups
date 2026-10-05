@@ -35,13 +35,13 @@ def scan(vault):
     """Yield (relpath, fullpath) for every file in scope, plus a count of iCloud placeholders."""
     found, placeholders = [], 0
     for d, dirs, files in os.walk(vault):
-        dirs[:] = sorted(x for x in dirs if x not in SKIP_DIRS)
+        dirs[:] = sorted(x for x in dirs if x not in SKIP_DIRS and not x.startswith(".tmp.drive"))  # Drive's in-flight copies
         for f in sorted(files):
             if f.endswith(".icloud"):
                 placeholders += not f.endswith(".md.icloud")
                 continue
-            if wanted(f):
-                full = os.path.join(d, f)
+            full = os.path.join(d, f)
+            if wanted(f) and not os.path.islink(full):   # links point elsewhere (e.g. a tool folder's python) and may dangle
                 found.append((os.path.relpath(full, vault), full))
     return found, placeholders
 

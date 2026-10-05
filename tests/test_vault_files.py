@@ -22,6 +22,8 @@ class VaultFiles(unittest.TestCase):
         self.write("notes.md", b"# a note")                            # notes are the other job's
         self.write("Studio/box.zip", b"zip")                           # studio zips excluded
         self.write("Hub/page.html.bak-20261004", b"old")               # leftovers excluded
+        os.symlink("/nonexistent/python3.14", os.path.join(self.vault, "Hub/python3"))  # dangling link skipped
+        self.write(".tmp.driveupload/35590", b"in flight")             # Drive's temp uploads skipped
 
     def write(self, rel, data):
         p = os.path.join(self.vault, rel)

@@ -102,10 +102,11 @@ class Freshness(unittest.TestCase):
         mtime = os.stat(os.path.join(d, "sets/2026-10-04/manifest-cloud.json")).st_mtime
         now = datetime.datetime.fromtimestamp(mtime, datetime.timezone.utc)
         problems, _ = freshness.check(store, now + datetime.timedelta(hours=10))
-        self.assertEqual(len(problems), 1)                    # cloud fresh; vault never existed
+        self.assertEqual(len(problems), 2)                    # cloud fresh; vault + files never existed
         self.assertIn("vault", problems[0])
+        self.assertIn("files", problems[1])
         problems, _ = freshness.check(store, now + datetime.timedelta(hours=40))
-        self.assertEqual(len(problems), 2)
+        self.assertEqual(len(problems), 3)
         self.assertIn("40 h old", " ".join(problems))
 
 

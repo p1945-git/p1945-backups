@@ -7,7 +7,7 @@ import sys
 from . import common
 
 MAX_AGE = datetime.timedelta(hours=36)
-SOURCES = ("cloud", "vault")
+SOURCES = ("cloud", "vault", "files")
 
 
 def check(store, now=None):
